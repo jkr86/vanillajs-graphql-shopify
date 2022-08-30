@@ -348,8 +348,6 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
       // Add item to cart
       const addToCart = (e) => {
         if (GLOBAL_PRODUCTS.length === 0) {
-          console.log("event",e.target.parentElement.parentElement.id)
-          
           cart.style.display = "block";
           let productVariantId = e.target.parentElement.parentElement.id;
           createCart(productVariantId).then((res) => {
@@ -383,8 +381,8 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
             let cartData = res.data.cartLinesUpdate.cart;
             formatCartData(cartData);
             quantity.value = parseInt(quantity.value) + 1;
+            cartIndicator.innerText = parseInt(quantity.value);
           });
-          
         }
       };
 
@@ -470,6 +468,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
           formatCartData(cartData);
         });
         quantity.value = parseInt(quantity.value) + 1;
+        cartIndicator.innerText = parseInt(quantity.value);
       };
 
       // Remove item from cart
@@ -485,7 +484,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
           formatCartData(cartData);
         });
         quantity.value = parseInt(quantity.value) - 1;
-        // cartIndicator.innerText=parseInt(quantity.value);
+        cartIndicator.innerText = parseInt(quantity.value);
       };
 
       // Append quantity controls
