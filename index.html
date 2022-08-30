@@ -348,8 +348,10 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
       // Add item to cart
       const addToCart = (e) => {
         if (GLOBAL_PRODUCTS.length === 0) {
+          console.log("event",e.target.parentElement.parentElement.id)
+          
           cart.style.display = "block";
-          let productVariantId = e.path[2].id;
+          let productVariantId = e.target.parentElement.parentElement.id;
           createCart(productVariantId).then((res) => {
             let cartData = res.data.cartCreate.cart;
             cartIndicator.innerText = cartData.lines.edges.length;
@@ -377,6 +379,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
         } else {
           const quantity = document.getElementById("quantity");
           updateCart(CART_ID, CART_LINE_ID, parseInt(quantity.value) + 1).then((res) => {
+            cart.style.display = "block";
             let cartData = res.data.cartLinesUpdate.cart;
             formatCartData(cartData);
             quantity.value = parseInt(quantity.value) + 1;
@@ -461,7 +464,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
       // Add item to card
       const increaseQuantity = (e) => {
         const quantity = document.getElementById("quantity");
-        let cartLineId = e.path[3].id;
+        let cartLineId = e.target.parentElement.parentElement.parentElement.id;
         updateCart(CART_ID, cartLineId, parseInt(quantity.value) + 1).then((res) => {
           let cartData = res.data.cartLinesUpdate.cart;
           formatCartData(cartData);
@@ -476,7 +479,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
           quantity.value = 1;
           return;
         }
-        let cartLineId = e.path[3].id;
+        let cartLineId = e.target.parentElement.parentElement.parentElement.id;
         updateCart(CART_ID, cartLineId, parseInt(quantity.value) - 1).then((res) => {
           let cartData = res.data.cartLinesUpdate.cart;
           formatCartData(cartData);
