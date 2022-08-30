@@ -65,6 +65,7 @@
       const API_PATH = "https://premier-robotic.myshopify.com/api/2022-07/graphql.json";
       let CART_ID = null;
       let GLOBAL_PRODUCTS = [];
+      let CART_LINE_ID = "";
       const API_PAYLOAD = {
         method: "POST",
         headers: {
@@ -373,6 +374,14 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
               GLOBAL_PRODUCTS = foundProducts;
             });
           });
+        } else {
+          const quantity = document.getElementById("quantity");
+          updateCart(CART_ID, CART_LINE_ID, parseInt(quantity.value) + 1).then((res) => {
+            let cartData = res.data.cartLinesUpdate.cart;
+            formatCartData(cartData);
+            quantity.value = parseInt(quantity.value) + 1;
+          });
+          
         }
       };
 
@@ -415,6 +424,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
         let title = document.createElement("h2");
         let price = document.createElement("h3");
         let cartBtn = document.createElement("button");
+        CART_LINE_ID = item.cartLineId;
         top.id = isCart ? item.cartLineId : item.node.variants?.edges[0].node.id;
         isCart && top.setAttribute("tagName", item.node.variants?.edges[0].node.id);
         top.classList.add("shadow-md", "rounded-md", "bg-white", "max-w-xs", "flex", "overflow-hidden", "relative", "my-4");
@@ -457,7 +467,6 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
           formatCartData(cartData);
         });
         quantity.value = parseInt(quantity.value) + 1;
-        // cartIndicator.innerText = parseInt(quantity.value);
       };
 
       // Remove item from cart
