@@ -63,7 +63,7 @@
     </div>
     <script>
       const API_PATH = "https://premier-robotic.myshopify.com/api/2022-07/graphql.json";
-      let CART_ID = null;
+      let CART_ID = localStorage.getItem("CART_ID");
       let GLOBAL_PRODUCTS = [];
       let CART_LINE_ID = "";
       const API_PAYLOAD = {
@@ -178,6 +178,24 @@ query($id:ID!) {
         }
       }
     }
+    cost {
+        totalAmount {
+          amount
+          currencyCode
+        }
+        subtotalAmount {
+          amount
+          currencyCode
+        }
+        totalTaxAmount {
+          amount
+          currencyCode
+        }
+        totalDutyAmount {
+          amount
+          currencyCode
+        }
+      }
   }
 }
   `;
@@ -347,7 +365,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
 
       // Add item to cart
       const addToCart = (e) => {
-        if (GLOBAL_PRODUCTS.length === 0) {
+        if (!CART_ID) {
           cart.style.display = "block";
           let productVariantId = e.target.parentElement.parentElement.id;
           createCart(productVariantId).then((res) => {
@@ -355,6 +373,7 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
             cartIndicator.innerText = cartData.lines.edges.length;
             cartStatus.style.display = "none";
             CART_ID = cartData.id;
+            localStorage.setItem("CART_ID", cartData.id);
             let items = cartData.lines.edges;
             getProducts().then((res) => {
               let products = res.data.products.edges;
@@ -466,9 +485,9 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
         updateCart(CART_ID, cartLineId, parseInt(quantity.value) + 1).then((res) => {
           let cartData = res.data.cartLinesUpdate.cart;
           formatCartData(cartData);
+          quantity.value = cartData.lines.edges[0].node.quantity;
+          cartIndicator.innerText = cartData.lines.edges[0].node.quantity;
         });
-        quantity.value = parseInt(quantity.value) + 1;
-        cartIndicator.innerText = parseInt(quantity.value);
       };
 
       // Remove item from cart
@@ -482,9 +501,9 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
         updateCart(CART_ID, cartLineId, parseInt(quantity.value) - 1).then((res) => {
           let cartData = res.data.cartLinesUpdate.cart;
           formatCartData(cartData);
+          quantity.value = cartData.lines.edges[0].node.quantity;
+          cartIndicator.innerText = cartData.lines.edges[0].node.quantity;
         });
-        quantity.value = parseInt(quantity.value) - 1;
-        cartIndicator.innerText = parseInt(quantity.value);
       };
 
       // Append quantity controls
@@ -525,6 +544,31 @@ mutation ($cartId:ID! $lineId:ID! $quantity:Int!){
         });
       };
       checkoutBtn.addEventListener("click", checkout);
+      getCart(CART_ID).then((res) => {
+        let cartData = res.data.cart;
+        let items = res.data.cart.lines.edges;
+        getProducts().then((res) => {
+          cartStatus.style.display = "none";
+          let products = res.data.products.edges;
+          let foundProducts = items.map((item) => {
+            return {
+              ...products.find((product) => {
+                return product.node.variants.edges.find((variant) => variant.node.id == item.node.merchandise.id);
+              }),
+              cartLineId: item.node.id,
+            };
+          });
+          let productsPlace = document.getElementById("cartProducts");
+          new Set(foundProducts).forEach((item) => {
+            let productExist = GLOBAL_PRODUCTS.find((product) => product.id === item.id);
+            if (!productExist) formatProduct(true, productsPlace, item);
+          });
+          GLOBAL_PRODUCTS = foundProducts;
+          formatCartData(cartData);
+          quantity.value = items[0].node.quantity;
+          cartIndicator.innerText = items[0].node.quantity;
+        });
+      });
     </script>
   </body>
 </html>
